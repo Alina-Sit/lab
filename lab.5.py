@@ -1,5 +1,6 @@
 import asyncio
 import threading
+import time
 from typing import TypeVar, Callable, Any
 
 T = TypeVar("T")
@@ -88,3 +89,70 @@ async def async_map_await(
             raise asyncio.CancelledError("Cancelled")
         results.append(await async_fn(item))
     return results
+
+
+def fake_api_callback(item: int, done) -> None:
+    def work():
+        time.sleep(0.1)
+        done(None, item * 2)
+    threading.Thread(target=work, daemon=True).start()
+
+
+async def fake_api(item: int) -> int:
+    await asyncio.sleep(0.1)
+    return item * 2
+
+
+INPUT = [1, 2, 3, 4, 5]
+
+
+def demo_callback() -> None:
+    finished = threading.Event()
+
+    def on_result(err, res):
+        if err:
+            print("Callback error:", err)
+        else:
+            print("Callback result:", res)
+        finished.set()
+
+    async_map_callback(INPUT, fake_api_callback, on_result)
+    finished.wait()
+
+
+async def demo_await() -> None:
+    result = await async_map_await(INPUT, fake_api)
+    print("Await result:", result)
+
+
+async def demo_await_cancel() -> None:
+    cancel = asyncio.Event()
+    asyncio.get_event_loop().call_later(0.25, cancel.set)
+    try:
+        result = await async_map_await(INPUT, fake_api, cancel)
+        print("Await result:", result)
+    except asyncio.CancelledError as e:
+        print("Await cancelled:", e)
+
+
+async def demo_promise() -> None:
+    result = await async_map_promise(INPUT, fake_api)
+    print("Promise result:", result)
+
+
+async def demo_promise_cancel() -> None:
+    cancel = asyncio.Event()
+    asyncio.get_event_loop().call_later(0.15, cancel.set)
+    try:
+        result = await async_map_promise(INPUT, fake_api, cancel)
+        print("Promise result:", result)
+    except asyncio.CancelledError as e:
+        print("Promise cancelled:", e)
+
+
+if __name__ == "__main__":
+    demo_callback()
+    asyncio.run(demo_await())
+    asyncio.run(demo_await_cancel())
+    asyncio.run(demo_promise())
+    asyncio.run(demo_promise_cancel())
