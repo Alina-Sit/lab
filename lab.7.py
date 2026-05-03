@@ -39,3 +39,31 @@ class Observable:
                 listener(err)
             except Exception as inner:
                 print(f"Error in error handler: {inner}")
+class UserService(Observable):
+    def login(self, username: str) -> None:
+        self.emit("login", {"username": username})
+
+    def logout(self, username: str) -> None:
+        self.emit("logout", {"username": username})
+
+    def purchase(self, username: str, amount: float) -> None:
+        self.emit("purchase", {"username": username, "amount": amount})
+
+
+class NotificationService:
+    def on_login(self, data: dict) -> None:
+        print(f"[Notification] Welcome, {data['username']}!")
+
+    def on_purchase(self, data: dict) -> None:
+        print(f"[Notification] Purchase confirmed: ${data['amount']:.2f}")
+
+
+class AnalyticsService:
+    def on_login(self, data: dict) -> None:
+        print(f"[Analytics] User logged in: {data['username']}")
+
+    def on_logout(self, data: dict) -> None:
+        print(f"[Analytics] User logged out: {data['username']}")
+
+    def on_purchase(self, data: dict) -> None:
+        print(f"[Analytics] Purchase tracked: {data['username']} spent ${data['amount']:.2f}")
