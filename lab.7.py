@@ -67,3 +67,50 @@ class AnalyticsService:
 
     def on_purchase(self, data: dict) -> None:
         print(f"[Analytics] Purchase tracked: {data['username']} spent ${data['amount']:.2f}")
+def main():
+    user_service = UserService()
+    notifications = NotificationService()
+    analytics = AnalyticsService()
+
+    unsubscribe_notif_login = user_service.subscribe("login", notifications.on_login)
+    unsubscribe_notif_purchase = user_service.subscribe("purchase", notifications.on_purchase)
+
+    user_service.subscribe("login", analytics.on_login)
+    user_service.subscribe("logout", analytics.on_logout)
+    user_service.subscribe("purchase", analytics.on_purchase)
+
+    unsubscribe_error = user_service.on_error(
+        lambda err: print(f"[ErrorHandler] Caught: {err}")
+    )
+
+    print("--- Login event ---")
+    user_service.login("alice")
+
+    print("\n--- Purchase event ---")
+    user_service.purchase("alice", 149.99)
+
+    print("\n--- Unsubscribe notifications from login ---")
+    unsubscribe_notif_login()
+    user_service.login("bob")
+
+    print("\n--- Logout event ---")
+    user_service.logout("alice")
+
+    print("\n--- Broken listener demo ---")
+    def broken_listener(data):
+        raise ValueError("Listener crashed!")
+
+    unsubscribe_broken = user_service.subscribe("purchase", broken_listener)
+    user_service.purchase("bob", 75.00)
+    unsubscribe_broken()
+
+    print("\n--- Unsubscribe error handler ---")
+    unsubscribe_error()
+
+    print("\n--- Purchase after all unsubscribes ---")
+    unsubscribe_notif_purchase()
+    user_service.purchase("alice", 10.00)
+
+
+if __name__ == "__main__":
+    main()
