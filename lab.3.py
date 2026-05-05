@@ -76,3 +76,44 @@ class TTLCache:
 
     def __len__(self) -> int:
         return len(self._cache)
+def memoize(
+    fn: Callable,
+    max_size: int | None = None,
+    policy: str = "lru",
+    ttl: float | None = None,
+    custom_evict: Callable | None = None,
+) -> Callable:
+    if custom_evict is not None:
+        cache: dict[str, Any] = {}
+
+        def wrapper(*args, **kwargs):
+            key = make_key(args, kwargs)
+            if key in cache:
+                return cache[key]
+            result = fn(*args, **kwargs)
+            if len(cache) >= (max_size or float("inf")):
+                evict_key = custom_evict(cache)
+                if evict_key is not None:
+                    del cache[evict_key]
+            cache[key] = result
+            return result
+
+        return wrapper
+
+    if ttl is not None:
+        store = TTLCache(ttl_seconds=ttl)
+    elif max_size is not None and policy == "lfu":
+        store = LFUCache(max_size=max_size)
+    else:
+        store = LRUCache(max_size=max_size or float("inf"))
+
+    def wrapper(*args, **kwargs):
+        key = make_key(args, kwargs)
+        hit, value = store.get(key)
+        if hit:
+            return value
+        result = fn(*args, **kwargs)
+        store.set(key, result)
+        return result
+
+    return wrapper
