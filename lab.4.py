@@ -16,3 +16,15 @@ class BiDirectionalPriorityQueue:
 
     def is_empty(self) -> bool:
         return len(self._items) == 0
+    def peek(self, mode: str = "highest"):
+        if self.is_empty():
+            return None
+        if mode == "highest":
+            return max(self._items, key=lambda x: x["priority"])["item"]
+        if mode == "lowest":
+            return min(self._items, key=lambda x: x["priority"])["item"]
+        if mode == "oldest":
+            return self._items[0]["item"]
+        if mode == "newest":
+            return self._items[-1]["item"]
+        raise ValueError(f"Unknown mode: {mode}")
