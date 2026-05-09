@@ -28,3 +28,17 @@ class BiDirectionalPriorityQueue:
         if mode == "newest":
             return self._items[-1]["item"]
         raise ValueError(f"Unknown mode: {mode}")
+    def dequeue(self, mode: str = "highest"):
+        if self.is_empty():
+            return None
+        if mode == "highest":
+            idx = max(range(len(self._items)), key=lambda i: self._items[i]["priority"])
+            return self._items.pop(idx)["item"]
+        if mode == "lowest":
+            idx = min(range(len(self._items)), key=lambda i: self._items[i]["priority"])
+            return self._items.pop(idx)["item"]
+        if mode == "oldest":
+            return self._items.pop(0)["item"]
+        if mode == "newest":
+            return self._items.pop()["item"]
+        raise ValueError(f"Unknown mode: {mode}")
