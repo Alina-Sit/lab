@@ -11,11 +11,6 @@ class BiDirectionalPriorityQueue:
         })
         self._counter += 1
 
-    def __len__(self) -> int:
-        return len(self._items)
-
-    def is_empty(self) -> bool:
-        return len(self._items) == 0
     def peek(self, mode: str = "highest"):
         if self.is_empty():
             return None
@@ -28,6 +23,7 @@ class BiDirectionalPriorityQueue:
         if mode == "newest":
             return self._items[-1]["item"]
         raise ValueError(f"Unknown mode: {mode}")
+
     def dequeue(self, mode: str = "highest"):
         if self.is_empty():
             return None
@@ -42,3 +38,9 @@ class BiDirectionalPriorityQueue:
         if mode == "newest":
             return self._items.pop()["item"]
         raise ValueError(f"Unknown mode: {mode}")
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def is_empty(self) -> bool:
+        return len(self._items) == 0
