@@ -1,0 +1,13 @@
+[project]
+name = "random-generator-example"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+py-modules = []
+
+[project.optional-dependencies]
+dev = []
+
+[tool.pip.dependencies]
+random-generator-lib = { path = "../random-generator-lib", editable = true }
