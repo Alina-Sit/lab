@@ -1,0 +1,7 @@
+[project]
+name = "logger-lib"
+version = "1.0.0"
+authors = [
+    {name = "Alina Sitkovskaya", email = "you@example.com"}
+]
+license = {text = "MIT"}
